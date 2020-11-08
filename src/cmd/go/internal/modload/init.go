@@ -130,7 +130,7 @@ func Init() {
 		return
 	}
 
-	if err := fsys.Init(base.Cwd); err != nil {
+	if err := fsys.Init(base.Cwd()); err != nil {
 		base.Fatalf("go: %v", err)
 	}
 
@@ -170,7 +170,7 @@ func Init() {
 		}
 		modRoot = ""
 	} else {
-		modRoot = findModuleRoot(base.Cwd)
+		modRoot = findModuleRoot(base.Cwd())
 		if modRoot == "" {
 			if cfg.ModFile != "" {
 				base.Fatalf("go: cannot find main module, but -modfile was set.\n\t-modfile cannot be used to set the module root directory.")
@@ -267,7 +267,7 @@ func WillBeEnabled() bool {
 		return false
 	}
 
-	if modRoot := findModuleRoot(base.Cwd); modRoot == "" {
+	if modRoot := findModuleRoot(base.Cwd()); modRoot == "" {
 		// GO111MODULE is 'auto', and we can't find a module root.
 		// Stay in GOPATH mode.
 		return false
@@ -326,8 +326,8 @@ func die() {
 	if cfg.Getenv("GO111MODULE") == "off" {
 		base.Fatalf("go: modules disabled by GO111MODULE=off; see 'go help modules'")
 	}
-	if dir, name := findAltConfig(base.Cwd); dir != "" {
-		rel, err := filepath.Rel(base.Cwd, dir)
+	if dir, name := findAltConfig(base.Cwd()); dir != "" {
+		rel, err := filepath.Rel(base.Cwd(), dir)
 		if err != nil {
 			rel = dir
 		}
@@ -404,7 +404,7 @@ func LoadModFile(ctx context.Context) {
 // exactly the same as in the legacy configuration (for example, we can't get
 // packages at multiple versions from the same module).
 func CreateModFile(ctx context.Context, modPath string) {
-	modRoot = base.Cwd
+	modRoot = base.Cwd()
 	Init()
 	modFilePath := ModFilePath()
 	if _, err := fsys.Stat(modFilePath); err == nil {
@@ -563,7 +563,7 @@ func AllowMissingModuleImports() {
 func modFileToBuildList() {
 	Target = modFile.Module.Mod
 	targetPrefix = Target.Path
-	if rel := search.InDir(base.Cwd, cfg.GOROOTsrc); rel != "" {
+	if rel := search.InDir(base.Cwd(), cfg.GOROOTsrc); rel != "" {
 		targetInGorootSrc = true
 		if Target.Path == "std" {
 			targetPrefix = ""

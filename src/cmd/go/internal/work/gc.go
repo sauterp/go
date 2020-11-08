@@ -175,7 +175,7 @@ func (gcToolchain) gc(b *Builder, a *Action, archive string, importcfg, embedcfg
 		args = append(args, f)
 	}
 
-	output, err = b.runOut(a, base.Cwd, nil, args...)
+	output, err = b.runOut(a, base.Cwd(), nil, args...)
 	return ofile, output, err
 }
 

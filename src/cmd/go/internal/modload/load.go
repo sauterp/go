@@ -341,7 +341,7 @@ func matchLocalDirs(m *search.Match) {
 		dir := filepath.Dir(filepath.Clean(m.Pattern()[:i+3]))
 		absDir := dir
 		if !filepath.IsAbs(dir) {
-			absDir = filepath.Join(base.Cwd, dir)
+			absDir = filepath.Join(base.Cwd(), dir)
 		}
 		if search.InDir(absDir, cfg.GOROOTsrc) == "" && search.InDir(absDir, ModRoot()) == "" && pathInModuleCache(absDir) == "" {
 			m.Dirs = []string{}
@@ -359,7 +359,7 @@ func resolveLocalPackage(dir string) (string, error) {
 	if filepath.IsAbs(dir) {
 		absDir = filepath.Clean(dir)
 	} else {
-		absDir = filepath.Join(base.Cwd, dir)
+		absDir = filepath.Join(base.Cwd(), dir)
 	}
 
 	bp, err := cfg.BuildContext.ImportDir(absDir, 0)
@@ -535,7 +535,7 @@ func DirImportPath(dir string) string {
 	LoadModFile(context.TODO())
 
 	if !filepath.IsAbs(dir) {
-		dir = filepath.Join(base.Cwd, dir)
+		dir = filepath.Join(base.Cwd(), dir)
 	} else {
 		dir = filepath.Clean(dir)
 	}

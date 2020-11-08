@@ -584,7 +584,7 @@ func ReloadPackageNoFlags(arg string, stk *ImportStack) *Package {
 		})
 		packageDataCache.Delete(p.ImportPath)
 	}
-	return LoadImport(context.TODO(), arg, base.Cwd, nil, stk, nil, 0)
+	return LoadImport(context.TODO(), arg, base.Cwd(), nil, stk, nil, 0)
 }
 
 // dirToImportPath returns the pseudo-import path we use for a package
@@ -955,7 +955,7 @@ func (pre *preload) preloadMatches(matches []*search.Match) {
 			case pre.sema <- struct{}{}:
 				go func(pkg string) {
 					mode := 0 // don't use vendoring or module import resolution
-					bp, loaded, err := loadPackageData(pkg, "", base.Cwd, "", false, mode)
+					bp, loaded, err := loadPackageData(pkg, "", base.Cwd(), "", false, mode)
 					<-pre.sema
 					if bp != nil && loaded && err == nil && !IgnoreImports {
 						pre.preloadImports(bp.Imports, bp)
@@ -2383,7 +2383,7 @@ func PackagesAndErrors(ctx context.Context, patterns []string) []*Package {
 			if pkg == "" {
 				panic(fmt.Sprintf("ImportPaths returned empty package for pattern %s", m.Pattern()))
 			}
-			p := loadImport(ctx, pre, pkg, base.Cwd, nil, &stk, nil, 0)
+			p := loadImport(ctx, pre, pkg, base.Cwd(), nil, &stk, nil, 0)
 			p.Match = append(p.Match, m.Pattern())
 			p.Internal.CmdlinePkg = true
 			if m.IsLiteral() {
@@ -2536,7 +2536,7 @@ func GoFilesPackage(ctx context.Context, gofiles []string) *Package {
 
 	var err error
 	if dir == "" {
-		dir = base.Cwd
+		dir = base.Cwd()
 	}
 	dir, err = filepath.Abs(dir)
 	if err != nil {

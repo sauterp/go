@@ -61,7 +61,7 @@ func init() {
 	cf.String("memprofilerate", "", "")
 	cf.StringVar(&testMutexProfile, "mutexprofile", "", "")
 	cf.String("mutexprofilefraction", "", "")
-	cf.Var(outputdirFlag{&testOutputDir}, "outputdir", "")
+	cf.Var(&testOutputDir, "outputdir", "")
 	cf.Int("parallel", 0, "")
 	cf.String("run", "", "")
 	cf.Bool("short", false, "")
@@ -69,7 +69,7 @@ func init() {
 	cf.StringVar(&testTrace, "trace", "", "")
 	cf.BoolVar(&testV, "v", false, "")
 
-	for name, _ := range passFlagToTest {
+	for name := range passFlagToTest {
 		cf.Var(cf.Lookup(name).Value, "test."+name, "")
 	}
 }
@@ -126,18 +126,24 @@ func (f stringFlag) Set(value string) error {
 // outputdirFlag implements the -outputdir flag.
 // It interprets an empty value as the working directory of the 'go' command.
 type outputdirFlag struct {
-	resolved *string
+	raw, abs string
 }
 
-func (f outputdirFlag) String() string { return *f.resolved }
-func (f outputdirFlag) Set(value string) (err error) {
+func (f *outputdirFlag) String() string { return string(f.raw) }
+func (f *outputdirFlag) Set(value string) (err error) {
+	f.raw = value
 	if value == "" {
-		// The empty string implies the working directory of the 'go' command.
-		*f.resolved = base.Cwd
+		f.abs = ""
 	} else {
-		*f.resolved, err = filepath.Abs(value)
+		f.abs, err = filepath.Abs(f.raw)
 	}
 	return err
+}
+func (f *outputdirFlag) getAbs() string {
+	if f.abs == "" {
+		return base.Cwd()
+	}
+	return f.abs
 }
 
 // vetFlag implements the special parsing logic for the -vet flag:
@@ -367,7 +373,7 @@ func testFlags(args []string) (packageNames, passToTest []string) {
 	// command. Set it explicitly if it is needed due to some other flag that
 	// requests output.
 	if testProfile() != "" && !outputDirSet {
-		injectedFlags = append(injectedFlags, "-test.outputdir="+testOutputDir)
+		injectedFlags = append(injectedFlags, "-test.outputdir="+testOutputDir.getAbs())
 	}
 
 	// If the user is explicitly passing -help or -h, show output
